@@ -1,14 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect,  useState } from "react";
 import {
   loadCaptchaEnginge,
   LoadCanvasTemplate,
-  LoadCanvasTemplateNoReload,
+
   validateCaptcha,
 } from "react-simple-captcha";
+import { AuthContext } from "../../Providers/AuthProvider";
+import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import Swal from "sweetalert2";
 
 const Login = () => {
-  const captchaRef = useRef(null);
+  
   const [disabled, setDisabled] = useState(true);
+  const { signIn } = useContext(AuthContext);
 
   useEffect(() => {
     loadCaptchaEnginge(6);
@@ -20,9 +25,19 @@ const Login = () => {
     const email = form.email.value;
     const password = form.password.value;
     console.log(email, password);
+    signIn(email, password).then((result) => {
+      const user = result.user;
+      console.log(user);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Something went wrong!",
+        footer: '<a href="#">Why do I have this issue?</a>'
+      });
+    });
   };
-  const handleValidateCaptcha = () => {
-    const userCaptchaValue = captchaRef.current.value;
+  const handleValidateCaptcha = (e) => {
+    const userCaptchaValue = e.target.value;
     if (validateCaptcha(userCaptchaValue)) {
       setDisabled(false);
     } else {
@@ -30,6 +45,10 @@ const Login = () => {
     }
   };
   return (
+    <>
+    <Helmet>
+        <title>Jaber Resturent|Login</title>
+      </Helmet>
     <div className="hero bg-base-200 min-h-screen">
       <div className="hero-content flex-col md:flex-row-reverse">
         <div className="text-center md:w-1/2 lg:text-left">
@@ -76,19 +95,15 @@ const Login = () => {
                 <LoadCanvasTemplate />
               </label>
               <input
+              onBlur={handleValidateCaptcha}
                 type="text"
                 placeholder="input in captcha"
                 name="captcha"
-                ref={captchaRef}
+                
                 className="input input-bordered"
                 required
               />
-              <button
-                onClick={handleValidateCaptcha}
-                className="btn btn-outline btn-xs mt-2 btn-accent"
-              >
-               Validated
-              </button>
+              
             </div>
             <div className="form-control mt-6">
               <input
@@ -98,10 +113,16 @@ const Login = () => {
                 value="Login"
               />
             </div>
+            <p>
+              <small>
+                New Here?<Link to="/signup">Create an Account</Link>{" "}
+              </small>
+            </p>
           </form>
         </div>
       </div>
     </div>
+    </>
   );
 };
 

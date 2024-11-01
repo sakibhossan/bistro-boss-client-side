@@ -4,8 +4,11 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../Providers/AuthProvider";
 import Swal from "sweetalert2";
+import useAxiosPublic from "../../hooks/useAxiosPublic";
+import SocialLogin from "../../components/socialLogin/SocialLogin";
 
 const SignUp = () => {
+  const axiosPublic = useAxiosPublic();
   const {
     register,
     handleSubmit,
@@ -23,8 +26,16 @@ const SignUp = () => {
       console.log(loggedUser);
       updateUserProfile(data.name,data.photoURL)
       .then(()=>{
-console.log('user Profile info updated')
-reset();
+// console.log('user Profle info updated')
+const userInfo = {
+  name:data.name,
+  email:data.email 
+}
+axiosPublic.post('users',userInfo)
+.then(res=>{
+  if(res.data.insertedId){
+    console.log('user added data base')
+    reset();
 Swal.fire({
   icon: "success",
   title: "Login Successfully",
@@ -32,6 +43,10 @@ Swal.fire({
   footer: '<a href="#">Why do You have any issue?</a>'
 });
 navigate('/');
+    
+  }
+})
+
       })
       .catch((error)=>{
         console.log(error)
@@ -156,11 +171,12 @@ navigate('/');
                   value="Sign Up"
                 />
               </div>
-              <p>
+              <p className="px-6">
                 <small>
                   New Here?<Link to="/login">All Ready Have an Account</Link>
                 </small>
               </p>
+              <SocialLogin></SocialLogin>
             </form>
           </div>
         </div>
